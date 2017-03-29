@@ -1,0 +1,35 @@
+From f543d4be8339e5a90f698490b0d10848a6cdf241 Mon Sep 17 00:00:00 2001
+From: Alexandru Gagniuc <alex.g@adaptrum.com>
+Date: Wed, 29 Mar 2017 10:32:35 -0700
+Subject: [PATCH] src/Makefile: Do not override externally set CFLAGS
+
+For the purpose of packaging software, it is expected that makefiles
+honor any flags that have been set by the packager. When this is not
+the case, the packager normally has to patch the Makefile.
+
+This is easily solved by not overriding CFLAGS when it's already been
+set externally.
+---
+ src/Makefile | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/src/Makefile b/src/Makefile
+index 6884bfe..5aa00e5 100644
+--- a/src/Makefile
++++ b/src/Makefile
+@@ -1,7 +1,10 @@
+ # CC=gcc
+-IDIR = "./includes"
+ INCLUDES = "-I/usr/include/libnl3"
+-CFLAGS= -g -O2 -Wall -Wextra -Isrc -I$(IDIR) $(INCLUDES) $(CT_ARCH) -DCT_VERSION='"$(VERSION)"'
++# When packaging, someone else sets the CFLAGS, so don't override them if they
++# have already been set. If there is no CFLAGS, then party hard!
++CFLAGS ?= -g -O2 -Wall -Wextra $(INCLUDES) $(CT_ARCH) -DCT_VERSION='"$(VERSION)"'
++# However, only we know about these paths, so append them to CFLAGS
++CFLAGS += -Isrc -Iincludes
+ 
+ ODIR=obj
+ LDIR =../lib
+-- 
+2.7.4
+
